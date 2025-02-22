@@ -1,0 +1,29 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "nitro build",
+    "dev": "nitro dev",
+    "prepare": "nitro prepare",
+    "preview": "node .output/server/index.mjs",
+    "db:generate": "drizzle-kit generate",
+    "db:rollback": "drizzle-kit drop",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:pull": "drizzle-kit pull",
+    "db:reset": "pnpm pg:stop && sleep 1 && pnpm pg:start && sleep 1 && pnpm db:init",
+    "db:studio": "drizzle-kit studio",
+    "db:init": "pnpm db:migrate && pnpm db:seed",
+    "db:seed": "jiti ./db/seed.ts",
+    "pg:start": "docker compose up -d",
+    "pg:stop": "docker compose down"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.30.4",
+    "nitropack": "latest"
+  },
+  "packageManager": "pnpm@9.15.2+sha512.93e57b0126f0df74ce6bff29680394c0ba54ec47246b9cf321f0121d8d9bb03f750a705f24edc3c1180853afd7c2c3b94196d0a3d53d3e069d9e2793ef11f321",
+  "dependencies": {
+    "drizzle-orm": "^0.38.3",
+    "postgres": "^3.4.5"
+  }
+}

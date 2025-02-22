@@ -2,10 +2,10 @@ SELECT create_hypertable('prices_history', by_range('time'));
 
 CREATE INDEX ix_symbol_time ON prices_history (denom, time DESC);
 
-CREATE MATERIALIZED VIEW "1m_candle2"
+CREATE MATERIALIZED VIEW "1m_candle"
 WITH (timescaledb.continuous) AS
     SELECT
-        time_bucket_gapfill('1 minute', time) AS bucket,
+        time_bucket('1 minute', time) AS bucket,
         denom,
         FIRST(price, time) AS "open",
         MAX(price) AS high,
@@ -60,18 +60,19 @@ WHERE denom = 'BTC' AND bucket >= NOW() - INTERVAL '4 hours'
 ORDER BY bucket;
 
 SELECT
-    time_bucket_gapfill('5 min', time, 
-        start => now() - INTERVAL '6 hours',  -- Start of the time range
-        finish => now()                     -- End of the time range
-    ) AS bucket,
-    denom,
-    FIRST(price, time) AS "open",
-    MAX(price) AS high,
-    MIN(price) AS low,
-    LAST(price, time) AS "close",
-    locf(LAST(price, time)) AS price     -- Optional: Fill gaps using last observation carried forward
-FROM prices_history
-WHERE denom = 'BTC'
-  AND time >= now() - INTERVAL '6 hours'       -- Filter to match the gapfill range
-GROUP BY bucket, denom
-ORDER BY bucket DESC;
+  time_bucket_gapfill ('5 minute', time) AS date,
+  denom,
+  locf (LAST (price, time)) AS "price"
+FROM
+  prices_history
+WHERE
+  time > '2021-12-31 00:00:00+00'::timestamptz
+  AND time < '2025-02-22 10:00:00-00'::timestamptz
+  AND denom = 'LTC'
+GROUP BY
+  date,
+  denom
+ORDER BY
+  date DESC
+LIMIT
+  100;

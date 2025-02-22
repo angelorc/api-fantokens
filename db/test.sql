@@ -1,78 +1,61 @@
-SELECT create_hypertable('prices_history', by_range('time'));
-
-CREATE INDEX ix_symbol_time ON prices_history (denom, time DESC);
-
-CREATE MATERIALIZED VIEW "1m_candle"
-WITH (timescaledb.continuous) AS
+WITH latest_prices AS (
     SELECT
-        time_bucket('1 minute', time) AS bucket,
         denom,
-        FIRST(price, time) AS "open",
-        MAX(price) AS high,
-        MIN(price) AS low,
-        LAST(price, time) AS "close"
+        LAST(price, time) AS last_price
     FROM prices_history
-    GROUP BY bucket, denom;
-
-SELECT add_continuous_aggregate_policy('1m_candle',
-    start_offset => INTERVAL '1 hour',
-    end_offset => INTERVAL '1 minute',
-    schedule_interval => INTERVAL '1 minute');
-
-CREATE MATERIALIZED VIEW "15m_candle"
-WITH (timescaledb.continuous) AS
+    GROUP BY denom
+),
+five_minute_candle_data AS (
     SELECT
-        time_bucket('15 minutes', time) AS bucket,
         denom,
-        FIRST(price, time) AS "open",
-        MAX(price) AS high,
-        MIN(price) AS low,
-        LAST(price, time) AS "close"
-    FROM prices_history
-    GROUP BY bucket, denom;
-
-SELECT add_continuous_aggregate_policy('15m_candle',
-    start_offset => INTERVAL '3 hours',
-    end_offset => INTERVAL '15 minutes',
-    schedule_interval => INTERVAL '15 minutes');
-
-CREATE MATERIALIZED VIEW one_hour_candle
-WITH (timescaledb.continuous) AS
+        time_bucket('5 minute', bucket) AS bucket,
+        FIRST(open, bucket) AS open,
+        LAST(close, bucket) AS close
+    FROM one_minute_candle
+    GROUP BY denom, time_bucket('5 minute', bucket)
+    order by bucket desc
+),
+one_hour_change AS (
     SELECT
-        time_bucket('1 hour', time) AS bucket,
         denom,
-        FIRST(price, time) AS "open",
-        MAX(price) AS high,
-        MIN(price) AS low,
-        LAST(price, time) AS "close"
-    FROM prices_history
-    GROUP BY bucket, denom;
-
-SELECT add_continuous_aggregate_policy('one_hour_candle',
-    start_offset => INTERVAL '3 hours',
-    end_offset => INTERVAL '1 hour',
-    schedule_interval => INTERVAL '1 hour');
-
-CALL refresh_continuous_aggregate('one_hour_candle', now() - INTERVAL '24 hours', now());
-
-SELECT * FROM "1m_candle"
-WHERE denom = 'BTC' AND bucket >= NOW() - INTERVAL '4 hours'
-ORDER BY bucket;
-
+        (LAST(close, bucket) - FIRST(open, bucket)) / FIRST(open, bucket) * 100 AS one_hour_pct_change
+    FROM five_minute_candle_data
+    WHERE bucket >= NOW() - INTERVAL '1 hour'
+    GROUP BY denom
+),
+one_day_change AS (
+    SELECT
+        denom,
+        (LAST(close, bucket) - FIRST(open, bucket)) / FIRST(open, bucket) * 100 AS one_day_pct_change
+    FROM five_minute_candle_data
+    WHERE bucket >= NOW() - INTERVAL '1 day'
+    GROUP BY denom
+),
+seven_day_change AS (
+    SELECT
+        denom,
+        (LAST(close, bucket) - FIRST(open, bucket)) / FIRST(open, bucket) * 100 AS seven_day_pct_change
+    FROM five_minute_candle_data
+    WHERE bucket >= NOW() - INTERVAL '7 days'
+    GROUP BY denom
+),
+thirty_day_change AS (
+    SELECT
+        denom,
+        (LAST(close, bucket) - FIRST(open, bucket)) / FIRST(open, bucket) * 100 AS thirty_day_pct_change
+    FROM five_minute_candle_data
+    WHERE bucket >= NOW() - INTERVAL '30 days'
+    GROUP BY denom
+)
 SELECT
-  time_bucket_gapfill ('5 minute', time) AS date,
-  denom,
-  locf (LAST (price, time)) AS "price"
-FROM
-  prices_history
-WHERE
-  time > '2021-12-31 00:00:00+00'::timestamptz
-  AND time < '2025-02-22 10:00:00-00'::timestamptz
-  AND denom = 'LTC'
-GROUP BY
-  date,
-  denom
-ORDER BY
-  date DESC
-LIMIT
-  100;
+    lp.denom,
+    lp.last_price,
+    COALESCE(ohc.one_hour_pct_change, 0) AS "1h_pct_change",
+    COALESCE(odc.one_day_pct_change, 0) AS "1d_pct_change",
+    COALESCE(sdc.seven_day_pct_change, 0) AS "7d_pct_change",
+    COALESCE(tdc.thirty_day_pct_change, 0) AS "30d_pct_change"
+FROM latest_prices lp
+LEFT JOIN one_hour_change ohc ON lp.denom = ohc.denom
+LEFT JOIN one_day_change odc ON lp.denom = odc.denom
+LEFT JOIN seven_day_change sdc ON lp.denom = sdc.denom
+LEFT JOIN thirty_day_change tdc ON lp.denom = tdc.denom;

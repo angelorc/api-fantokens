@@ -2,5 +2,14 @@
 export default defineNitroConfig({
   compatibilityDate: '2025-02-22',
   
-  srcDir: "server"
+  srcDir: "server",
+
+  experimental: {
+    tasks: true,
+    asyncContext: true,
+  },
+
+  scheduledTasks: {
+    '*/5 * * * *': ['ingest']
+  }
 });

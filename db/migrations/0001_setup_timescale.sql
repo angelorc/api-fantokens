@@ -2,8 +2,21 @@ SELECT create_hypertable('prices_history', by_range('time'));
 
 CREATE INDEX ix_denom_time ON prices_history (denom, time DESC);
 
+CREATE MATERIALIZED VIEW one_minute_candle
+WITH (timescaledb.continuous) AS
+SELECT
+    time_bucket('1 minute', time) AS bucket,
+    denom,
+    FIRST(price, time) AS "open",
+    MAX(price) AS high,
+    MIN(price) AS low,
+    LAST(price, time) AS "close"
+FROM prices_history
+GROUP BY bucket, denom
+WITH NO DATA;
+
 CREATE MATERIALIZED VIEW one_hour_candle
-  WITH (timescaledb.continuous) AS
+WITH (timescaledb.continuous) AS
 SELECT
     time_bucket('1 hour', time) AS bucket,
     denom,
@@ -12,10 +25,11 @@ SELECT
     MIN(price) AS low,
     LAST(price, time) AS "close"
 FROM prices_history
-GROUP BY bucket, denom;
+GROUP BY bucket, denom
+WITH NO DATA;
 
 CREATE MATERIALIZED VIEW one_day_candle
-  WITH (timescaledb.continuous) AS
+WITH (timescaledb.continuous) AS
 SELECT
     time_bucket('1 day', time) AS bucket,
     denom,
@@ -24,10 +38,11 @@ SELECT
     MIN(price) AS low,
     LAST(price, time) AS "close"
 FROM prices_history
-GROUP BY bucket, denom;
+GROUP BY bucket, denom
+WITH NO DATA;
 
 CREATE MATERIALIZED VIEW one_week_candle
-  WITH (timescaledb.continuous) AS
+WITH (timescaledb.continuous) AS
 SELECT
     time_bucket('7 days', time) AS bucket,
     denom,
@@ -36,10 +51,11 @@ SELECT
     MIN(price) AS low,
     LAST(price, time) AS "close"
 FROM prices_history
-GROUP BY bucket, denom;
+GROUP BY bucket, denom
+WITH NO DATA;
 
 CREATE MATERIALIZED VIEW one_month_candle
-  WITH (timescaledb.continuous) AS
+WITH (timescaledb.continuous) AS
 SELECT
     time_bucket('1 month', time) AS bucket,
     denom,
@@ -48,7 +64,8 @@ SELECT
     MIN(price) AS low,
     LAST(price, time) AS "close"
 FROM prices_history
-GROUP BY bucket, denom;
+GROUP BY bucket, denom
+WITH NO DATA;
 
 SELECT add_continuous_aggregate_policy('one_minute_candle',
     start_offset => INTERVAL '4 hours',

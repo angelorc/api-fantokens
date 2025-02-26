@@ -23,8 +23,9 @@ function sha256(input: string): string {
   return createHash('sha256').update(input).digest('hex');
 }
 
-function ibcDenom(denom: string): string {
-  return `ibc/${sha256(`transfer/channel-73/${denom}`).toUpperCase()}`;
+// channel-73 is osmosis
+export function ibcDenom(denom: string, channel: string = 'channel-73'): string {
+  return `ibc/${sha256(`transfer/${channel}/${denom}`).toUpperCase()}`;
 }
 
 export function getPoolByDenom(pools: PoolsResponse['pools'], denom: string): PoolsResponse['pools'][0] | undefined {

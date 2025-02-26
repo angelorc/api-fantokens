@@ -10,6 +10,7 @@ export default defineNitroConfig({
   },
 
   scheduledTasks: {
-    '*/5 * * * *': ['ingest']
+    '*/5 * * * *': ['ingest'],
+    '*/30 * * * *': ['fantokens:import'],
   }
 });

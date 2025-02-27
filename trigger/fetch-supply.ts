@@ -1,21 +1,25 @@
-import {
-  fetchBitsongSupply,
-  fetchCoingeckoPrice,
-  fetchPools,
-  getPoolByDenom,
-  getPriceFromPool
-} from "~/utils";
+import { logger, schedules } from "@trigger.dev/sdk/v3";
 import { db } from "~~/db";
-import { fantokens } from "~~/db/schema";
+import { fetchBitsongSupply } from "~/utils";
 import { assets } from 'chain-registry/mainnet/bitsong'
+import { fantokens } from "~~/db/schema";
 
-export default defineTask({
-  meta: {
-    name: "fantokens:import",
-    description: "Sync fantokens from bitsong supply",
+export const fetchSupplyTask = schedules.task({
+  id: "fetch-supply",
+  cron: "*/1 * * * *",
+  maxDuration: 20,
+  queue: {
+    concurrencyLimit: 1
   },
-  async run({ payload, context }) {
-    console.log("Syncing fantokens from bitsong supply");
+  retry: {
+    maxAttempts: 4,
+    minTimeoutInMs: 1000,
+    maxTimeoutInMs: 10000,
+    factor: 1.8,
+    randomize: false,
+  },
+  run: async (payload, { ctx }) => {
+    logger.log("Running supply ingestion task");
 
     let supply = (await fetchBitsongSupply()).filter(coin => coin.denom.startsWith('ft'));
 
@@ -54,8 +58,8 @@ export default defineTask({
         }
       })
 
-    console.log('End syncing fantokens');
+    logger.log('End supply ingestion task');
 
-    return { result: 'success' };
+    return { result: "Success" };
   },
 });

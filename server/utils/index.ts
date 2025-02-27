@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { PoolsResponse, SupplyResponse } from "~~/types";
+import { $fetch } from 'ofetch'
 
 export const fetchPools = async (nextKey?: string) => {
   const url = `https://lcd.osmosis.zone/osmosis/gamm/v1beta1/pools${nextKey ? `?pagination.key=${encodeURIComponent(nextKey)}` : ''}`;
@@ -39,25 +40,27 @@ export function getPoolByDenom(pools: PoolsResponse['pools'], denom: string): Po
 }
 
 export function getPriceFromPool(pool: PoolsResponse['pools'][0], denom: string): number {
-  console.log(`--------- Pool: ${pool.id} ---------`);
   const assetA = pool.pool_assets.find(asset => asset.token.denom === ibcDenom('ubtsg'));
-  console.log(`Denom: ubtsg, Asset A: ${assetA!.token.amount}`);
   const assetB = pool.pool_assets.find(asset => asset.token.denom === ibcDenom(denom));
-  console.log(`Denom: ${denom}, Asset B: ${assetB!.token.amount}`);
 
   const price = Number(assetA!.token.amount) / Number(assetB!.token.amount);
-  console.log(`Price: ${price}`);
   return price;
 }
 
-export const fetchCoingeckoPrice = defineCachedFunction(async (denom: string) => {
+// export const fetchCoingeckoPrice = defineCachedFunction(async (denom: string) => {
+//   const url = `https://api.coingecko.com/api/v3/simple/price?ids=bitsong&vs_currencies=usd`;
+//   const response = await $fetch<{ bitsong: { usd: number } }>(url);
+//   return response.bitsong.usd;
+// }, {
+//   maxAge: 15, // 15 seconds
+//   getKey: (denom) => denom,
+// })
+
+export async function fetchCoingeckoPrice(denom: string) {
   const url = `https://api.coingecko.com/api/v3/simple/price?ids=bitsong&vs_currencies=usd`;
   const response = await $fetch<{ bitsong: { usd: number } }>(url);
   return response.bitsong.usd;
-}, {
-  maxAge: 15, // 15 seconds
-  getKey: (denom) => denom,
-})
+}
 
 export async function fetchBitsongSupply() {
   const response = await $fetch<SupplyResponse>(`https://lcd.explorebitsong.com/cosmos/bank/v1beta1/supply`);

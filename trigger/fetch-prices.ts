@@ -1,20 +1,24 @@
-import {
-  fetchBitsongSupply,
-  fetchCoingeckoPrice,
-  fetchPools,
-  getPoolByDenom,
-  getPriceFromPool
-} from "~/utils";
+import { logger, schedules, wait } from "@trigger.dev/sdk/v3";
 import { db } from "~~/db";
 import { prices_history } from "~~/db/schema";
+import { fetchPools, fetchBitsongSupply, fetchCoingeckoPrice, getPoolByDenom, getPriceFromPool } from "~/utils";
 
-export default defineTask({
-  meta: {
-    name: "ingest",
-    description: "Run the prices ingestion task",
+export const fetchPricesTask = schedules.task({
+  id: "fetch-prices",
+  cron: "*/5 * * * *",
+  maxDuration: 60,
+  queue: {
+    concurrencyLimit: 1
   },
-  async run({ payload, context }) {
-    console.log("Running prices ingestion task");
+  retry: {
+    maxAttempts: 4,
+    minTimeoutInMs: 1000,
+    maxTimeoutInMs: 10000,
+    factor: 1.8,
+    randomize: false,
+  },
+  run: async (payload, { ctx }) => {
+    logger.log("Running prices ingestion task");
 
     const { pools } = await fetchPools();
     const fantokens = (await fetchBitsongSupply()).filter(coin => coin.denom.startsWith('ft'));
@@ -28,15 +32,12 @@ export default defineTask({
 
       const price = getPriceFromPool(pool, fantoken.denom);
       return { time: new Date(), denom: fantoken.denom, price: price * btsgPrice };
-    })
-      .sort((a, b) => b.price - a.price)
+    }).sort((a, b) => b.price - a.price)
       .filter(price => price.price > 0)
-
-      console.log(prices);
 
     await db.insert(prices_history).values(prices)
 
-    console.log('End prices ingestion task');
+    logger.log('End prices ingestion task');
 
     return { result: "Success" };
   },

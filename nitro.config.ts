@@ -5,12 +5,6 @@ export default defineNitroConfig({
   srcDir: "server",
 
   experimental: {
-    tasks: true,
     asyncContext: true,
   },
-
-  scheduledTasks: {
-    '*/5 * * * *': ['ingest'],
-    '*/30 * * * *': ['fantokens:import'],
-  }
 });

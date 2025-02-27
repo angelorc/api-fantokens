@@ -11,16 +11,16 @@ services:
     volumes:
       - .data:/var/lib/postgresql/data
     restart: unless-stopped
-  web-app:
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-    environment:
-      - DATABASE_URL=postgresql://postgres:postgres@timescaledb:5432/postgres"
-    ports:
-      - "3000:3000"
-    volumes:
-      - .:/src
-    depends_on:
-      - timescaledb
-    restart: unless-stopped
+  # web-app:
+  #   build:
+  #     context: .
+  #     dockerfile: ./Dockerfile
+  #   environment:
+  #     - DATABASE_URL=postgresql://postgres:postgres@timescaledb:5432/postgres"
+  #   ports:
+  #     - "3000:3000"
+  #   volumes:
+  #     - .:/src
+  #   depends_on:
+  #     - timescaledb
+  #   restart: unless-stopped

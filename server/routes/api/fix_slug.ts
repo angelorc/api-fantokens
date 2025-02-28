@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm"
 import { db } from "~~/db"
 import { fantokens } from "~~/db/schema"
 
@@ -21,24 +22,16 @@ export default defineEventHandler(async (event) => {
     'ft85AE1716C5E39EA6D64BBD7898C3899A7B500626': 'enmoda'
   }
 
-  _fantokens = _fantokens.map(token => {
-    const slug = slugMap[token.denom]
-    return {
-      ...token,
-      slug: slug ?? undefined
+  for (const ft of _fantokens) {
+    if (slugMap[ft.denom]) {
+      await db.update(fantokens)
+        // @ts-ignore
+        .set({ slug: slugMap[ft.denom] })
+        .where(eq(fantokens.denom, ft.denom))
     }
-  })
+  }
 
-  await db.insert(fantokens)
-    .values(_fantokens)
-    .onConflictDoUpdate({
-      target: fantokens.denom,
-      set: {
-        symbol: fantokens.symbol,
-        name: fantokens.name,
-        supply: fantokens.supply,
-        logo: fantokens.logo,
-        slug: fantokens.slug
-      }
-    })
+  return {
+    success: true
+  }
 })

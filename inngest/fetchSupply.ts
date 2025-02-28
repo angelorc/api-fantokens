@@ -25,7 +25,6 @@ export default inngest.createFunction(
             decimals: 6,
             supply: parseInt(coin.amount),
             logo,
-            slug: slug ?? undefined
           }
         }
 

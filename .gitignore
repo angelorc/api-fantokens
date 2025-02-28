@@ -6,4 +6,4 @@ dist
 .output
 .env
 
-.trigger
+data_backups

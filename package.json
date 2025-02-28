@@ -5,7 +5,7 @@
     "dev": "nitro dev",
     "prepare": "nitro prepare",
     "preview": "node .output/server/index.mjs",
-    "inngest": "npx inngest-cli@latest dev",
+    "inngest": "npx inngest-cli@latest dev --no-discovery -u http://localhost:3000/inngest",
     "db:generate": "drizzle-kit generate",
     "db:rollback": "drizzle-kit drop",
     "db:migrate": "drizzle-kit migrate",

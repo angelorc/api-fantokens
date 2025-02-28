@@ -1,6 +1,7 @@
-SELECT create_hypertable('prices_history', by_range('time'));
+-- Custom SQL migration file, put your code below! --
+SELECT create_hypertable('prices_history', by_range('time'));--> statement-breakpoint
 
-CREATE INDEX ix_denom_time ON prices_history (denom, time DESC);
+CREATE INDEX ix_denom_time ON prices_history (denom, time DESC);--> statement-breakpoint
 
 CREATE MATERIALIZED VIEW one_minute_candle
 WITH (timescaledb.continuous) AS
@@ -13,7 +14,7 @@ SELECT
     LAST(price, time) AS "close"
 FROM prices_history
 GROUP BY bucket, denom
-WITH NO DATA;
+WITH NO DATA;--> statement-breakpoint
 
 CREATE MATERIALIZED VIEW one_hour_candle
 WITH (timescaledb.continuous) AS
@@ -26,7 +27,7 @@ SELECT
     LAST(price, time) AS "close"
 FROM prices_history
 GROUP BY bucket, denom
-WITH NO DATA;
+WITH NO DATA;--> statement-breakpoint
 
 CREATE MATERIALIZED VIEW one_day_candle
 WITH (timescaledb.continuous) AS
@@ -39,7 +40,7 @@ SELECT
     LAST(price, time) AS "close"
 FROM prices_history
 GROUP BY bucket, denom
-WITH NO DATA;
+WITH NO DATA;--> statement-breakpoint
 
 CREATE MATERIALIZED VIEW one_week_candle
 WITH (timescaledb.continuous) AS
@@ -52,7 +53,7 @@ SELECT
     LAST(price, time) AS "close"
 FROM prices_history
 GROUP BY bucket, denom
-WITH NO DATA;
+WITH NO DATA;--> statement-breakpoint
 
 CREATE MATERIALIZED VIEW one_month_candle
 WITH (timescaledb.continuous) AS
@@ -65,32 +66,32 @@ SELECT
     LAST(price, time) AS "close"
 FROM prices_history
 GROUP BY bucket, denom
-WITH NO DATA;
+WITH NO DATA;--> statement-breakpoint
 
 SELECT add_continuous_aggregate_policy('one_minute_candle',
     start_offset => INTERVAL '4 hours',
     end_offset => null,
-    schedule_interval => INTERVAL '5 second');
+    schedule_interval => INTERVAL '5 second');--> statement-breakpoint
 
 SELECT add_continuous_aggregate_policy('one_hour_candle',
     start_offset => INTERVAL '1 days',
     end_offset => null,
-    schedule_interval => INTERVAL '1 minute');
+    schedule_interval => INTERVAL '1 minute');--> statement-breakpoint
 
 SELECT add_continuous_aggregate_policy('one_day_candle',
     start_offset => INTERVAL '1 days',
     end_offset => null,
-    schedule_interval => INTERVAL '1 hour');
+    schedule_interval => INTERVAL '1 hour');--> statement-breakpoint
 
 SELECT add_continuous_aggregate_policy('one_week_candle',
     start_offset => INTERVAL '30 days',
     end_offset => null,
-    schedule_interval => INTERVAL '1 day');
+    schedule_interval => INTERVAL '1 day');--> statement-breakpoint
 
 SELECT add_continuous_aggregate_policy('one_month_candle',
     start_offset => INTERVAL '3 months',
     end_offset => null,
-    schedule_interval => INTERVAL '1 week');
+    schedule_interval => INTERVAL '1 week');--> statement-breakpoint
 
 -- SELECT remove_continuous_aggregate_policy('one_minute_candle');
 -- CALL refresh_continuous_aggregate('one_minute_candle', now() - INTERVAL '24 hours', null);
@@ -157,4 +158,4 @@ FROM latest_prices lp
 LEFT JOIN one_hour_change ohc ON lp.denom = ohc.denom
 LEFT JOIN one_day_change odc ON lp.denom = odc.denom
 LEFT JOIN seven_day_change sdc ON lp.denom = sdc.denom
-LEFT JOIN thirty_day_change tdc ON lp.denom = tdc.denom;
+LEFT JOIN thirty_day_change tdc ON lp.denom = tdc.denom;--> statement-breakpoint

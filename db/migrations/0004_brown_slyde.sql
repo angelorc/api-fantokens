@@ -1,1 +1,0 @@
-ALTER TABLE "fantokens" ADD COLUMN "slug" text;

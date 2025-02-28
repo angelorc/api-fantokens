@@ -5,36 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1740218249545,
-      "tag": "0000_jazzy_thor",
+      "when": 1740701380216,
+      "tag": "0000_cool_wilson_fisk",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1740218262568,
-      "tag": "0001_setup_timescale",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1740574072895,
-      "tag": "0002_faulty_gambit",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1740575067799,
-      "tag": "0003_volatile_mulholland_black",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1740577559129,
-      "tag": "0004_brown_slyde",
+      "when": 1740701432426,
+      "tag": "0001_setup_timescaledb",
       "breakpoints": true
     }
   ]

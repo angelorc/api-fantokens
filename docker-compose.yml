@@ -9,7 +9,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - .data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
   # web-app:
   #   build:
@@ -24,3 +24,9 @@ services:
   #   depends_on:
   #     - timescaledb
   #   restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+# restore db from dump
+# gunzip -c ./data_backups/backup-2025-02-28T00-35-06-379Z.sql.gz | docker exec -i timescaledb psql -U postgres

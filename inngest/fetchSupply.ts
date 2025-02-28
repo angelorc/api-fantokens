@@ -1,6 +1,7 @@
 import { db } from "~~/db";
 import { inngest } from "./client";
-import { assets } from 'chain-registry/mainnet/bitsong'
+// import { assets } from 'chain-registry/mainnet/bitsong'
+import { assets } from 'chain-registry/mainnet/bitsong/index.js'
 import { fantokens } from "~~/db/schema";
 
 export default inngest.createFunction(

@@ -1,11 +1,11 @@
 import fetchSupply from "./fetchSupply";
 import fetchPrices from "./fetchPrices";
-import dbBackup from "./dbBackup";
+// import dbBackup from "./dbBackup";
 
 export const functions = [
   fetchSupply,
   fetchPrices,
-  dbBackup,
+  // dbBackup,
 ];
 
 export { inngest } from "./client";

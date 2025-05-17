@@ -7,3 +7,5 @@ dist
 .env
 
 data_backups
+
+dump.dump

@@ -5,6 +5,24 @@ import { ibcDenom } from "~/utils";
 import BigNumber from "bignumber.js";
 
 export default defineEventHandler(async (event) => {
+  // const results = await db
+  //   .select({
+  //     denom: fantokens.denom,
+  //     symbol: fantokens.symbol,
+  //     name: fantokens.name,
+  //     decimals: sql<number>`coalesce(fantokens.decimals, 0)`.mapWith(Number),
+  //     supply: sql<number>`coalesce(fantokens.supply, 0)`.mapWith(Number),
+  //     logo: fantokens.logo,
+  //     coingecko_id: fantokens.coingecko_id,
+  //     slug: fantokens.slug,
+  //     price: sql<number>`coalesce(prices.last_price, 0)`.mapWith(Number),
+  //     'price_1h_change': sql<number>`coalesce(cast(prices."1h_pct_change" as numeric), 0)`.mapWith(Number),
+  //     'price_1d_change': sql<number>`coalesce(cast(prices."1d_pct_change" as numeric), 0)`.mapWith(Number),
+  //     'price_7d_change': sql<number>`coalesce(cast(prices."7d_pct_change" as numeric), 0)`.mapWith(Number),
+  //     'price_30d_change': sql<number>`coalesce(cast(prices."30d_pct_change" as numeric), 0)`.mapWith(Number),
+  //   })
+  //   .from(fantokens)
+  //   .leftJoin(prices, eq(fantokens.denom, prices.denom));
   const results = await db
     .select({
       denom: fantokens.denom,
@@ -15,14 +33,14 @@ export default defineEventHandler(async (event) => {
       logo: fantokens.logo,
       coingecko_id: fantokens.coingecko_id,
       slug: fantokens.slug,
-      price: sql<number>`coalesce(prices.last_price, 0)`.mapWith(Number),
-      'price_1h_change': sql<number>`coalesce(cast(prices."1h_pct_change" as numeric), 0)`.mapWith(Number),
-      'price_1d_change': sql<number>`coalesce(cast(prices."1d_pct_change" as numeric), 0)`.mapWith(Number),
-      'price_7d_change': sql<number>`coalesce(cast(prices."7d_pct_change" as numeric), 0)`.mapWith(Number),
-      'price_30d_change': sql<number>`coalesce(cast(prices."30d_pct_change" as numeric), 0)`.mapWith(Number),
+      price: sql<number>`coalesce(cp.last_price, 0)`.mapWith(Number),
+      'price_1h_change': sql<number>`coalesce(cp."1h_pct_change", 0)`.mapWith(Number),
+      'price_1d_change': sql<number>`coalesce(cp."1d_pct_change", 0)`.mapWith(Number),
+      'price_7d_change': sql<number>`coalesce(cp."7d_pct_change", 0)`.mapWith(Number),
+      'price_30d_change': sql<number>`coalesce(cp."30d_pct_change", 0)`.mapWith(Number),
     })
     .from(fantokens)
-    .leftJoin(prices, eq(fantokens.denom, prices.denom));
+    .leftJoin(sql`current_prices AS cp`, eq(fantokens.denom, sql`cp.denom`));
 
   return results.map(result => {
     const supply = new BigNumber(result.supply).div(10 ** result.decimals).toNumber();

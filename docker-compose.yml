@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - ./.data:/home/postgres/pgdata/data
     restart: unless-stopped
@@ -24,7 +24,7 @@ services:
   #   environment:
   #     - DATABASE_URL=postgresql://postgres:postgres@timescaledb:5432/postgres
   #   ports:
-  #     - "3000:3000"
+  #     - "127.0.0.13000:3000"
   #   volumes:
   #     - .:/src
   #   depends_on:
